@@ -48,6 +48,7 @@
     <Compile Include="Net\DTO.cs" />
     <Compile Include="LinePortion.cs" />
     <Compile Include="Net\LineDataTransfer.cs" />
+    <Compile Include="Net\NetworkConnection.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

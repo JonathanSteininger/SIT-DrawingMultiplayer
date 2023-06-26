@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace DrawingTogether.Net
 {
-    public interface DTO
+    internal interface DTO
     {
         string Type { get; }
     }
