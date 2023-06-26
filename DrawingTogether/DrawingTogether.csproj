@@ -44,6 +44,7 @@
   <ItemGroup>
     <Compile Include="DTO.cs" />
     <Compile Include="LineData.cs" />
+    <Compile Include="LinePortion.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
