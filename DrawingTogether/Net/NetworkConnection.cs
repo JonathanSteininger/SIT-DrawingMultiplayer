@@ -18,13 +18,22 @@ namespace DrawingTogether.Net
         private NetworkStream _stream;
         private BinaryReader _reader;
         private BinaryWriter _writer;
-
+        /// <summary>
+        /// Use to form a connection to a destination ip and port.
+        /// </summary>
+        /// <param name="ip">destination ip address</param>
+        /// <param name="port">destination port number</param>
         public NetworkConnection(string ip, int port)
         {
             _ip = ip;
             _port = port;
             Connect();
         }
+        /// <summary>
+        /// Used to initialise a connection using an already connected client.
+        /// </summary>
+        /// <param name="client"></param>
+        /// <exception cref="Exception"></exception>
         public NetworkConnection(TcpClient client)
         {
             if (!client.Connected) throw new Exception("Client Must be connected.");
