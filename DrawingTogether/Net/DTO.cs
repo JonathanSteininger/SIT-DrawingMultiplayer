@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DrawingTogether
+namespace DrawingTogether.Net
 {
     public abstract class DTO
     {

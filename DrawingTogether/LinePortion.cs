@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace DrawingTogether
 {
@@ -46,6 +48,28 @@ namespace DrawingTogether
 
             //defaults
             IsVisible = true;
+        }
+        /// <summary>
+        /// Constructor used for deserializing from json.
+        /// </summary>
+        /// <param name="tick"></param>
+        /// <param name="owner"></param>
+        /// <param name="isVisible"></param>
+        /// <param name="color"></param>
+        /// <param name="startPost"></param>
+        /// <param name="EndPost"></param>
+        [JsonConstructor]
+        public LinePortion(long tick, string owner, Color color, Point startPos, Point EndPos, bool isVisible)
+        {
+            Tick = tick;
+            Owner = owner;
+            Color = color;
+
+            _startPos = startPos;
+            _endPos = EndPos;
+
+            //defaults
+            IsVisible = isVisible;
         }
         /// <summary>
         /// Checks if two lines are equal.
