@@ -10,146 +10,93 @@ using DrawingTogether.Net;
 
 namespace AppDrawingTogether.Game
 {
-    internal class GameManager
+    internal class GameManager : GroupBox
     {
-        private long _startTick;
-        public long StartTick { get { return _startTick; } }
+        public MyCanvas Canvas { get; set; }
 
-        public string PlayerName { get; set; }
+        private ColorBoxesBox _colorOptions;
 
-        public PictureBox Canvas;
-        private int _MsTick;
-        private int _MsTickDrawing;
+        public string PlayerName { get { return Canvas.PlayerName; } set { Canvas.PlayerName = value; } }
+        public new Size Size { get { return base.Size; } set { base.Size = value; UpdateSizes(); } }
 
-        private Dictionary<Color, Pen> PenCache;
 
-        private Color _currentColor = Color.Black;
+        public static float DEFAULT_FRAMERATE = 30f;
 
-        private Point pastPoint;
-
-        private List<LinePortion> _lines;
-
-        public bool StopDrawing = false;
-
-        private int pastCount;
-
-        private bool MouseDown = false;
-        public float FrameRate { get { return 1000f / _MsTick; } set { _MsTick = (int)(1000f * (1 / value)); } }
-        public float DrawingFrameRate { get { return 1000f / _MsTickDrawing; } set { _MsTickDrawing = (int)(1000f * (1 / value)); } }
-
-        public GameManager(PictureBox Canvas, float frameRate, string playerName)
+        public GameManager(Size size, Point location, string playerName)
         {
+            Size = size;
+            Location = location;
+
+            Canvas = new MyCanvas(DEFAULT_FRAMERATE);
             PlayerName = playerName;
-            _lines = new List<LinePortion>();
-            this.Canvas = Canvas;
-            FrameRate = frameRate;
-            _startTick = DateTime.Now.Ticks;
-            
-            AddEvents();
+            Canvas.BorderStyle = BorderStyle.FixedSingle;
 
-            StartCanvasRefresh();
+            Controls.Add(Canvas);
+
+            AddColorBoxes();
+
+            UpdateSizes();
+
+            Canvas.Start();
         }
-        /// <summary>
-        /// Adds all the events for object in the class after initialising.
-        /// </summary>
-        private void AddEvents()
+
+        private PictureBox _currentColorBox;
+        private void AddColorBoxes()
         {
-            Canvas.Paint += Canvas_Paint;
-            Canvas.MouseDown += OnMouseDown;
-            Canvas.MouseUp += OnMouseUp;
-            Canvas.MouseMove += OnMouseMove;
+            int gap = 5;
+            int size = 20;
+            int columns = 10;
+
+            _currentColorBox = new PictureBox();
+            int SizeOfBigBox = size + gap + size;
+            _currentColorBox.Size = new Size(SizeOfBigBox, SizeOfBigBox);
+            _currentColorBox.Location = new Point(gap, gap);
+            _currentColorBox.BorderStyle = BorderStyle.FixedSingle;
+            _currentColorBox.BackColor = Canvas._currentColor;
+
+
+            _colorOptions = new ColorBoxesBox(size, gap, columns, ColorBoxesBox.DEFAULT_COLORS, OnColorOptionClicked);
+            _colorOptions.Location = new Point(SizeOfBigBox + gap * 2, 0);
+            Controls.Add(_colorOptions);
+            Controls.Add(_currentColorBox);
         }
-        /// <summary>
-        /// runs when mouse moves. draws line if mouse button is held down.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void OnMouseMove(object sender, MouseEventArgs e)
+
+        private void OnColorOptionClicked(object sender, EventArgs e)
         {
-            if (MouseDown) AddLine(pastPoint, GetRelativeMousePos(e.Location));
-            pastPoint = GetRelativeMousePos(e.Location);
+            PictureBox p = sender as PictureBox;
+            if (p == null) return;
+            ChooseColor(p.BackColor);
         }
-        /// <summary>
-        /// Stops the ability to draw lines
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void OnMouseUp(object sender, MouseEventArgs e)
+
+        private void ChooseColor(Color color)
         {
-            if(MouseDown) AddLine(pastPoint, GetRelativeMousePos(e.Location));
-            MouseDown = false;
+            Canvas._currentColor = color;
+            _currentColorBox.BackColor = color;
+            UpdateCurrentColorBox();
         }
-        /// <summary>
-        /// MouseDown event, allows for lines to be drawn when mouse button is pressed
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void OnMouseDown(object sender, MouseEventArgs e)
-        {   
-            MouseDown = true;
-            pastPoint = GetRelativeMousePos(e.Location);
+
+        private void UpdateCurrentColorBox()
+        {
 
         }
-        /// <summary>
-        /// Gets the mouse position relative to the canvas picturebox. inputs the global form mouse position.
-        /// </summary>
-        /// <param name="absolutePos"></param>
-        /// <returns></returns>
-        private Point GetRelativeMousePos(Point absolutePos)
+
+        private void UpdateSizes()
         {
-            return new Point(absolutePos.X - Canvas.Location.X, absolutePos.Y - Canvas.Location.Y);
+            UpdateCanvasSize();
+
         }
-        /// <summary>
-        /// Starts the async background loop that draws the canvas.
-        /// </summary>
-        private async void StartCanvasRefresh()
+
+        private void UpdateCanvasSize()
         {
-            while(!StopDrawing)
-            {
-                Canvas.Refresh();
-                await Task.Delay(_MsTick);
-            }
+            if (Canvas == null || _colorOptions == null) return;
+            int heightOffset = _colorOptions.Height;
+            Canvas.Height = Height - heightOffset;
+            Canvas.Width = Width;
+            Canvas.Location = new Point(0, heightOffset);
         }
-        /// <summary>
-        /// Adds a line into the lines list
-        /// </summary>
-        /// <param name="pastMousePos"></param>
-        /// <param name="mousePos"></param>
-        private void AddLine(Point pastMousePos, Point mousePos)
-        {
-            long age = DateTime.Now.Ticks - _startTick;
-            LinePortion line = new LinePortion(age, PlayerName, _currentColor, pastMousePos, mousePos);
-            _lines.Add(line);
-        }
-        /// <summary>
-        /// draws the canvas.
-        /// paints all lines stored in the gameManager instance.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void Canvas_Paint(object sender, PaintEventArgs e)
-        {
-            Graphics g = e.Graphics;
-            if(PenCache == null ) PenCache = new Dictionary<Color, Pen>();
-            SortLines();
-            foreach(LinePortion line in _lines)
-            {
-                if (!line.IsVisible) continue;
-                if(!PenCache.ContainsKey(line.Color)) PenCache.Add(line.Color, new Pen(line.Color));
-                g.DrawLine(PenCache[line.Color], line.StartPos, line.EndPos);
-            }
-        }
-        /// <summary>
-        /// Sorts lines if the amount of lines have changed.
-        /// normally lines amount only changes if a line gets added.
-        /// </summary>
-        private void SortLines()
-        {
-            if(pastCount != _lines.Count)
-            {
-                _lines.Sort();
-                pastCount = _lines.Count;
-            }
-        }
+
+        
+
+
     }
 }

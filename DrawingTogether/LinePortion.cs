@@ -20,12 +20,12 @@ namespace DrawingTogether
         public Color Color;
         private Point _startPos;
         private Point _endPos;
-
+        public float Width;
         public Point StartPos { get { return _startPos; } }
         public Point EndPos { get { return _endPos; } }
 
 
-        public LinePortion(long tick, string OwnerName, Color LineColor, Point start, Point end)
+        public LinePortion(long tick, string OwnerName, Color LineColor, Point start, Point end, float width)
         {
             Tick = tick;
             Owner = OwnerName;
@@ -36,8 +36,9 @@ namespace DrawingTogether
 
             //defaults
             IsVisible = true;
+            Width = width;
         }
-        public LinePortion(long tick, string OwnerName, Color LineColor, int StartXpos, int StartYpos, int EndXpos, int EndYpos)
+        public LinePortion(long tick, string OwnerName, Color LineColor, int StartXpos, int StartYpos, int EndXpos, int EndYpos, float width)
         {
             Tick = tick;
             Owner = OwnerName;
@@ -48,6 +49,7 @@ namespace DrawingTogether
 
             //defaults
             IsVisible = true;
+            Width = width;
         }
         /// <summary>
         /// Constructor used for deserializing from json.
@@ -59,7 +61,7 @@ namespace DrawingTogether
         /// <param name="startPost"></param>
         /// <param name="EndPost"></param>
         [JsonConstructor]
-        public LinePortion(long tick, string owner, Color color, Point startPos, Point EndPos, bool isVisible)
+        public LinePortion(long tick, string owner, Color color, Point startPos, Point EndPos, bool isVisible, float Width)
         {
             Tick = tick;
             Owner = owner;
@@ -70,6 +72,7 @@ namespace DrawingTogether
 
             //defaults
             IsVisible = isVisible;
+            this.Width = Width;
         }
         /// <summary>
         /// Checks if two lines are equal.
@@ -84,7 +87,7 @@ namespace DrawingTogether
             if (obj == null) throw new ArgumentNullException(nameof(obj));
             if (!(obj is LinePortion)) return false;
             LinePortion other = (LinePortion)obj;
-            bool temp = (StartPos, EndPos, Owner, Tick) == (other.StartPos, other.EndPos, other.Owner, other.Tick);
+            bool temp = (StartPos, EndPos, Owner, Tick, Width) == (other.StartPos, other.EndPos, other.Owner, other.Tick, other.Width);
             if (temp) CheckUpdate(other);
             return temp;
         }
@@ -113,7 +116,7 @@ namespace DrawingTogether
 
         public override int GetHashCode()
         {
-            string HashString = $"{Tick} {Owner} {StartPos} {EndPos}";
+            string HashString = $"{Tick} {Owner} {StartPos} {EndPos} w:{Width}";
             return HashString.GetHashCode();
         }
     }

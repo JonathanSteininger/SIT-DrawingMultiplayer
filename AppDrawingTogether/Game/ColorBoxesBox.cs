@@ -12,6 +12,11 @@ namespace AppDrawingTogether.Game
     {
         private Color[] _colors;
 
+        public static int DEFAULT_COLOR_SIZE = 8;
+        public static int DEFAULT_GAP = 2;
+        public static int DEFAULT_COLUMN_AMOUNT = 10;
+        
+
         public static Color[] DEFAULT_COLORS = new Color[] {
             Color.Black,
             Color.White,
@@ -26,31 +31,32 @@ namespace AppDrawingTogether.Game
             Color.Pink,
             Color.Violet
         };
-        public ColorBoxesBox() : this(8,2,6,2,DEFAULT_COLORS, null) { }
-        public ColorBoxesBox(int colorSize, int gap, int Columns, int rows, Color[] Colors, EventHandler OnClickEvent)
+        public ColorBoxesBox(EventHandler OnClickEvent) : this(OnClickEvent, DEFAULT_COLORS) { }
+        public ColorBoxesBox(EventHandler OnClickEvent, Color[] Colors) : this(DEFAULT_COLOR_SIZE, DEFAULT_GAP, DEFAULT_COLUMN_AMOUNT, Colors, OnClickEvent) { }
+        public ColorBoxesBox() : this(null) { }
+        public ColorBoxesBox(int colorSize, int gap, int Columns, Color[] Colors, EventHandler OnClickEvent)
         {
-            Height = colorSize * rows + gap * (rows + 1);
-            Width = (colorSize + gap ) * (Columns / rows) + gap;
-            _rows = rows;
+            _colors = Colors;
+            Height = colorSize * (_colors.Length / Columns + 1) + gap * ((_colors.Length / Columns + 1) + 1);
+            Width = (colorSize + gap ) * Columns + gap;
             _columns = Columns;
             _colorBoxesSize = new Size(colorSize, colorSize);
             _gap = gap;
             GenerateBoxes(OnClickEvent);
         }
-        private int _rows, _columns;
+        private int _columns;
         private Size _colorBoxesSize;
         private int _gap;
         private void GenerateBoxes(EventHandler onClickEvent)
         {
             for(int i = 0; i< _colors.Length; i++)
             {
-                int row = i / (_columns);
-                int col = i % (_columns);
-                if (row > _rows) return;
+                int row = i / _columns;
+                int col = i % _columns;
                 PictureBox box = new PictureBox();
                 box.BackColor = _colors[i];
                 box.BorderStyle = BorderStyle.FixedSingle;
-                box.Click += onClickEvent;
+                if (onClickEvent != null) box.Click += onClickEvent;
                 box.Size = _colorBoxesSize;
                 box.Location = new Point(col * (box.Width + _gap) + _gap, row * (box.Height + _gap) + _gap);
                 Controls.Add(box);
