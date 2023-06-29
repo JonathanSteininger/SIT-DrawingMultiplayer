@@ -12,6 +12,8 @@ namespace AppDrawingTogether.Game
 {
     internal class GameManager : GroupBox
     {
+
+        private PictureBox _currentColorBox;
         public MyCanvas Canvas { get; set; }
 
         private ColorBoxesBox _colorOptions;
@@ -21,6 +23,23 @@ namespace AppDrawingTogether.Game
 
 
         public static float DEFAULT_FRAMERATE = 30f;
+
+        private LineSizesBox<LineThickness> _lineSizesBox;
+
+        private void GenerateLineSizeBox(int width, int height, int gap)
+        {
+            _lineSizesBox = new LineSizesBox<LineThickness>(width, height, gap);
+            _lineSizesBox.AddButtonClickMethod(OnLineSizeButtonClicked);
+            _lineSizesBox.Location = new Point(_colorOptions.Location.X + _colorOptions.Width + _boxesGap, 0);
+            Controls.Add(_lineSizesBox);
+        }
+
+        private void OnLineSizeButtonClicked(object sender, EventArgs e)
+        {
+            Button btn = sender as Button;
+            if (btn == null) return;
+            Canvas.SetLineSize((LineThickness)btn.Tag);
+        }
 
         public GameManager(Size size, Point location, string playerName)
         {
@@ -33,20 +52,19 @@ namespace AppDrawingTogether.Game
 
             Controls.Add(Canvas);
 
-            AddColorBoxes();
+            AddColorBoxes(_colorBoxesSize, _colorBoxColumns, _boxesGap);
 
             UpdateSizes();
 
+            GenerateLineSizeBox( 70, _currentColorBox.Height + _boxesGap * 2, _boxesGap);
+
             Canvas.Start();
         }
-
-        private PictureBox _currentColorBox;
-        private void AddColorBoxes()
+        private int _boxesGap = 5;
+        private int _colorBoxesSize = 20;
+        private int _colorBoxColumns = 10;
+        private void AddColorBoxes(int size, int columns, int gap)
         {
-            int gap = 5;
-            int size = 20;
-            int columns = 10;
-
             _currentColorBox = new PictureBox();
             int SizeOfBigBox = size + gap + size;
             _currentColorBox.Size = new Size(SizeOfBigBox, SizeOfBigBox);

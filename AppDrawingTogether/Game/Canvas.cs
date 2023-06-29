@@ -34,7 +34,7 @@ namespace AppDrawingTogether.Game
 
         private Dictionary<LineThickness, float> _lineSizes = new Dictionary<LineThickness, float>()
         {
-            {LineThickness.Samll, DEFAULT_WIDTH_SMALL },
+            {LineThickness.Small, DEFAULT_WIDTH_SMALL },
             {LineThickness.Medium, DEFAULT_WIDTH_MEDIUM },
             {LineThickness.Large, DEFAULT_WIDTH_LARGE },
             {LineThickness.ExtraLarge, DEFAULT_WIDTH_EXTRA_LARGE},
@@ -46,7 +46,7 @@ namespace AppDrawingTogether.Game
         public static float DEFAULT_WIDTH_LARGE = 4f;
         public static float DEFAULT_WIDTH_EXTRA_LARGE = 8f;
 
-        private LineThickness _currentLineWidth = LineThickness.Samll;
+        private LineThickness _currentLineWidth = LineThickness.Small;
 
         public void SetLineSize(LineThickness size)
         {
@@ -163,7 +163,7 @@ namespace AppDrawingTogether.Game
             {
                 if (!line.IsVisible) continue;
                 PenCacheKey key = new PenCacheKey(line.Color, line.Width);
-                if (!PenCache.ContainsKey(key)) PenCache.Add(key, new Pen(line.Color));
+                if (!PenCache.ContainsKey(key)) PenCache.Add(key, new Pen(line.Color, line.Width));
 
                 g.DrawLine(PenCache[key], line.StartPos, line.EndPos);
             }

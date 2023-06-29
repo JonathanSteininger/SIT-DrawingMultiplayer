@@ -17,10 +17,12 @@ namespace AppDrawingTogether
         {
             InitializeComponent();
             Resize += Form1_Resize;
+            Size = Screen.PrimaryScreen.Bounds.Size;
         }
 
         private void Form1_Resize(object sender, EventArgs e)
         {
+            if (Manager == null) return;
             Manager.Size = Size;
         }
 

@@ -8,7 +8,7 @@ namespace AppDrawingTogether.Game
 {
     internal enum LineThickness
     {
-        Samll,
+        Small,
         Medium,
         Large,
         ExtraLarge,
