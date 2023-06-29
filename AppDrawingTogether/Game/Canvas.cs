@@ -19,7 +19,7 @@ namespace AppDrawingTogether.Game
 
         private int _MsTick;
 
-        private Dictionary<PenCacheKey, Pen> PenCache;
+        private Dictionary<Color, Dictionary<float, Pen>> PenCache;
 
         public Color _currentColor = Color.Black;
 
@@ -157,31 +157,36 @@ namespace AppDrawingTogether.Game
         private void Canvas_Paint(object sender, PaintEventArgs e)
         {
             Graphics g = e.Graphics;
-            if (PenCache == null) PenCache = new Dictionary<PenCacheKey, Pen>();
             SortLines();
             foreach (LinePortion line in _lines)
             {
                 if (!line.IsVisible) continue;
-                PenCacheKey key = new PenCacheKey(line.Color, line.Width);
-                if (!PenCache.ContainsKey(key)) PenCache.Add(key, new Pen(line.Color, line.Width));
 
-                g.DrawLine(PenCache[key], line.StartPos, line.EndPos);
+                VerifyPenCache(line);
+
+                g.DrawLine(PenCache[line.Color][line.Width], line.StartPos, line.EndPos);
             }
         }
-        /// <summary>
-        /// Used for a key in the cash dictionary. stores the line color and line width for the key.
-        /// </summary>
-        private struct PenCacheKey
+
+        private void VerifyPenCache(LinePortion line)
         {
-            public Color lineColor { get; set; }
-            public float Thickness { get; set; }
-
-            public PenCacheKey(Color color, float thickness)
+            if (PenCache == null) PenCache = new Dictionary<Color, Dictionary<float, Pen>>();
+            //verifies if penColor exsists in cache
+            if (!PenCache.ContainsKey(line.Color))
             {
-                lineColor = color;
-                Thickness = thickness;
+                PenCache.Add(line.Color, new Dictionary<float, Pen>() {
+                    {line.Width, MakePen(line) }
+                });
+                return;
+            }
+            //verifies if pen size exists in cache
+            if (!PenCache[line.Color].ContainsKey(line.Width))
+            {
+                PenCache[line.Color].Add(line.Width, MakePen(line));
             }
         }
+        private Pen MakePen(LinePortion line) => new Pen(line.Color, line.Width);
+
         /// <summary>
         /// Sorts lines if the amount of lines have changed.
         /// normally lines amount only changes if a line gets added.
