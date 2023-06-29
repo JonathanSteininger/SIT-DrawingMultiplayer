@@ -29,11 +29,34 @@ namespace AppDrawingTogether.Game
 
         private bool StopDrawing = false;
 
-        private float _currentLineWidth = 1f;
-
 
         private int pastCount;
 
+        private Dictionary<LineThickness, float> _lineSizes = new Dictionary<LineThickness, float>()
+        {
+            {LineThickness.Samll, DEFAULT_WIDTH_SMALL },
+            {LineThickness.Medium, DEFAULT_WIDTH_MEDIUM },
+            {LineThickness.Large, DEFAULT_WIDTH_LARGE },
+            {LineThickness.ExtraLarge, DEFAULT_WIDTH_EXTRA_LARGE},
+            {LineThickness.Custom, DEFAULT_WIDTH_SMALL }
+        };
+
+        public static float DEFAULT_WIDTH_SMALL = 1f;
+        public static float DEFAULT_WIDTH_MEDIUM = 2f;
+        public static float DEFAULT_WIDTH_LARGE = 4f;
+        public static float DEFAULT_WIDTH_EXTRA_LARGE = 8f;
+
+        private LineThickness _currentLineWidth = LineThickness.Samll;
+
+        public void SetLineSize(LineThickness size)
+        {
+            _currentLineWidth = size;
+        }
+        public void SetCustomLineSize(float size)
+        {
+            _lineSizes[LineThickness.Custom] = size;
+            _currentLineWidth = LineThickness.Custom;
+        }
 
         private new bool MouseDown = false;
         public float FrameRate { 
@@ -120,9 +143,11 @@ namespace AppDrawingTogether.Game
         private void AddLine(Point pastMousePos, Point mousePos)
         {
             long age = DateTime.Now.Ticks - _startTick;
-            LinePortion line = new LinePortion(age, PlayerName, _currentColor, pastMousePos, mousePos, _currentLineWidth);
+            LinePortion line = new LinePortion(age, PlayerName, _currentColor, pastMousePos, mousePos, LineWidth);
             _lines.Add(line);
         }
+
+        public float LineWidth => _lineSizes[_currentLineWidth];
         /// <summary>
         /// draws the canvas.
         /// paints all lines stored in the gameManager instance.
