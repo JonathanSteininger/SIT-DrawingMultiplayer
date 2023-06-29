@@ -10,14 +10,6 @@ using DrawingTogether.Net;
 
 namespace AppDrawingTogether.Game
 {
-    internal enum LineThickness
-    {
-        Samll,
-        Medium,
-        Large,
-        ExtraLarge,
-        Custom
-    }
     internal class GameManager : GroupBox
     {
         public MyCanvas Canvas { get; set; }
