@@ -27,7 +27,17 @@ namespace AppDrawingTogether.Game
 
         private List<LinePortion> _lines;
 
+        private HashSet<LinePortion> _pastLines;
+
+        public List<LinePortion> AddedLines { get; set; }
+
+
         private bool StopDrawing = false;
+
+        private new bool MouseDown = false;
+
+
+        public float LineWidth => _lineSizes[_currentLineWidth];
 
 
         private int pastCount;
@@ -48,6 +58,29 @@ namespace AppDrawingTogether.Game
 
         private LineThickness _currentLineWidth = LineThickness.Small;
 
+
+        public float FrameRate
+        {
+            get { return 1000f / _MsTick; }
+            set
+            {
+                if (value > 0) _MsTick = (int)(1000f * (1 / value));
+                else _MsTick = 0;
+            }
+        }
+
+        public MyCanvas(float frameRate)
+        {
+            _lines = new List<LinePortion>();
+            _pastLines = new HashSet<LinePortion>();
+            AddedLines = new List<LinePortion>();
+
+            FrameRate = frameRate;
+            _startTick = DateTime.Now.Ticks;
+
+            AddEvents();
+        }
+
         public void SetLineSize(LineThickness size)
         {
             _currentLineWidth = size;
@@ -56,84 +89,6 @@ namespace AppDrawingTogether.Game
         {
             _lineSizes[LineThickness.Custom] = size;
             _currentLineWidth = LineThickness.Custom;
-        }
-
-        private new bool MouseDown = false;
-        public float FrameRate { 
-            get { return 1000f / _MsTick; } 
-            set {
-                if (value > 0) _MsTick = (int)(1000f * (1 / value));
-                else _MsTick = 0;
-            } 
-        }
-
-        public MyCanvas(float frameRate)
-        {
-            _lines = new List<LinePortion>();
-
-            FrameRate = frameRate;
-            _startTick = DateTime.Now.Ticks;
-
-            AddEvents();
-        }
-
-
-        /// <summary>
-        /// Adds all the events for object in the class after initialising.
-        /// </summary>
-        private void AddEvents()
-        {
-            Paint += Canvas_Paint;
-            base.MouseDown += OnMouseDown;
-            MouseUp += OnMouseUp;
-            MouseMove += OnMouseMove;
-        }
-        /// <summary>
-        /// runs when mouse moves. draws line if mouse button is held down.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void OnMouseMove(object sender, MouseEventArgs e)
-        {
-            if (MouseDown) AddLine(pastPoint, GetRelativeMousePos(e.Location));
-            pastPoint = GetRelativeMousePos(e.Location);
-        }
-        /// <summary>
-        /// Stops the ability to draw lines
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void OnMouseUp(object sender, MouseEventArgs e)
-        {
-            if (MouseDown) AddLine(pastPoint, GetRelativeMousePos(e.Location));
-            MouseDown = false;
-        }
-        /// <summary>
-        /// MouseDown event, allows for lines to be drawn when mouse button is pressed
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void OnMouseDown(object sender, MouseEventArgs e)
-        {
-            MouseDown = true;
-            pastPoint = e.Location;
-
-        }
-        private Point GetRelativeMousePos(Point absolutePos)
-        {
-            return absolutePos;
-        }
-        /// <summary>
-        /// Starts the async background loop that draws the canvas.
-        /// </summary>
-        private async void StartCanvasRefresh()
-        {
-            while (!StopDrawing)
-            {
-                Refresh();
-                if (_MsTick <= 0) continue;
-                await Task.Delay(_MsTick);
-            }
         }
         /// <summary>
         /// Adds a line into the lines list
@@ -147,25 +102,91 @@ namespace AppDrawingTogether.Game
             _lines.Add(line);
         }
 
-        public float LineWidth => _lineSizes[_currentLineWidth];
+
+        private bool _redrawEverything = false;
+        public void FullRedraw() => _redrawEverything = true;
+
+
         /// <summary>
         /// draws the canvas.
         /// paints all lines stored in the gameManager instance.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
+        
         private void Canvas_Paint(object sender, PaintEventArgs e)
         {
             Graphics g = e.Graphics;
-            SortLines();
-            foreach (LinePortion line in _lines)
+            if (_redrawEverything) PaintFresh(g);
+            else if (AddedLines.Count <= 0) PaintAdditive(g);
+            else PaintMixed(g);
+
+            
+        }
+
+        private void PaintMixed(Graphics g)
+        {
+            List<LinePortion> linesToDraw = GetLinesToDraw();
+            PaintLines(linesToDraw, g);
+            AddLinesToPast(linesToDraw);
+        }
+
+        private void PaintAdditive(Graphics g)
+        {
+
+            PaintLines(_lines,g);
+            AddLinesToPast(_lines);
+            _lines.Clear();
+        }
+
+        private void AddLinesToPast(List<LinePortion> lines)
+        {
+            foreach(LinePortion line in _lines) _pastLines.Add(line);
+        }
+
+        private List<LinePortion> GetLinesToDraw()
+        {
+            List<LinePortion> lines = new List<LinePortion>();
+
+            lines.AddRange(_lines);
+            lines.AddRange(AddedLines);
+            lines.Sort();
+            long tick = lines[lines.Count - 1].Tick;
+
+            List<LinePortion> tempPast = _pastLines.ToList();
+            int StartIndex = GetStartIndexPastTick(tick, tempPast);
+            lines.AddRange(tempPast.GetRange(StartIndex, _pastLines.Count - StartIndex - 1));
+
+            return lines;
+        }
+
+        private int GetStartIndexPastTick(long tick, List<LinePortion> lines)
+        {
+            lines.Sort();
+            return lines.FindIndex(item => item.Tick > tick);
+        }
+
+        private void PaintLines(List<LinePortion> lines, Graphics g)
+        {
+            //lines.Sort();
+            foreach (LinePortion line in lines)
             {
-                if (!line.IsVisible) continue;
+                if (!line.IsVisible) line.Color = BackColor;
 
                 VerifyPenCache(line);
 
                 g.DrawLine(PenCache[line.Color][line.Width], line.StartPos, line.EndPos);
             }
+        }
+
+        private void PaintFresh(Graphics g)
+        {
+            _redrawEverything = false;
+            //g.FillRectangle(new SolidBrush(BackColor), new Rectangle(new Point(0,0), Size));
+            AddLinesToPast(_lines);
+            _lines.Clear();
+
+            PaintLines(_pastLines.ToList(), g);
         }
 
         private void VerifyPenCache(LinePortion line)
@@ -191,20 +212,79 @@ namespace AppDrawingTogether.Game
         /// Sorts lines if the amount of lines have changed.
         /// normally lines amount only changes if a line gets added.
         /// </summary>
-        private void SortLines()
+
+
+        /// <summary>
+        /// Starts the async background loop that draws the canvas.
+        /// </summary>
+        private async void StartCanvasRefresh()
         {
-            if (pastCount != _lines.Count)
+            while (!StopDrawing)
             {
-                _lines.Sort();
-                pastCount = _lines.Count;
+                //Refresh();
+                if (IsDisposed) return;
+                InvokePaint(this, new PaintEventArgs(CreateGraphics(), new Rectangle(Location, Size)));
+                if (_MsTick <= 0) continue;
+                await Task.Delay(_MsTick);
             }
         }
-
 
         public void Stop() => StopDrawing = true;
         internal void Start()
         {
             StartCanvasRefresh();
+        }
+
+
+
+
+
+
+
+
+        //events
+
+
+        /// <summary>
+        /// Adds all the events for object in the class after initialising.
+        /// </summary>
+        private void AddEvents()
+        {
+            Paint += Canvas_Paint;
+            base.MouseDown += OnMouseDown;
+            MouseUp += OnMouseUp;
+            MouseMove += OnMouseMove;
+        }
+        /// <summary>
+        /// runs when mouse moves. draws line if mouse button is held down.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void OnMouseMove(object sender, MouseEventArgs e)
+        {
+            if (MouseDown) AddLine(pastPoint, e.Location);
+            pastPoint = e.Location;
+        }
+        /// <summary>
+        /// Stops the ability to draw lines
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void OnMouseUp(object sender, MouseEventArgs e)
+        {
+            if (MouseDown) AddLine(pastPoint, e.Location);
+            MouseDown = false;
+        }
+        /// <summary>
+        /// MouseDown event, allows for lines to be drawn when mouse button is pressed
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void OnMouseDown(object sender, MouseEventArgs e)
+        {
+            MouseDown = true;
+            pastPoint = e.Location;
+
         }
     }
 }

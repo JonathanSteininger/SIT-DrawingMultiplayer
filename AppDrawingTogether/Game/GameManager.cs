@@ -26,20 +26,6 @@ namespace AppDrawingTogether.Game
 
         private LineSizesBox<LineThickness> _lineSizesBox;
 
-        private void GenerateLineSizeBox(int width, int height, int gap)
-        {
-            _lineSizesBox = new LineSizesBox<LineThickness>(width, height, gap);
-            _lineSizesBox.AddButtonClickMethod(OnLineSizeButtonClicked);
-            _lineSizesBox.Location = new Point(_colorOptions.Location.X + _colorOptions.Width + _boxesGap, 0);
-            Controls.Add(_lineSizesBox);
-        }
-
-        private void OnLineSizeButtonClicked(object sender, EventArgs e)
-        {
-            Button btn = sender as Button;
-            if (btn == null) return;
-            Canvas.SetLineSize((LineThickness)btn.Tag);
-        }
 
         public GameManager(Size size, Point location, string playerName)
         {
@@ -101,7 +87,7 @@ namespace AppDrawingTogether.Game
         private void UpdateSizes()
         {
             UpdateCanvasSize();
-
+            Canvas?.FullRedraw();
         }
 
         private void UpdateCanvasSize()
@@ -113,7 +99,52 @@ namespace AppDrawingTogether.Game
             Canvas.Location = new Point(0, heightOffset);
         }
 
-        
+        private TextBox LineThicknessBox;
+        private void GenerateLineSizeBox(int width, int height, int gap)
+        {
+            _lineSizesBox = new LineSizesBox<LineThickness>(width, height, gap);
+            _lineSizesBox.AddButtonClickMethod(OnLineSizeButtonClicked);
+            _lineSizesBox.Location = new Point(_colorOptions.Location.X + _colorOptions.Width + _boxesGap, 0);
+            Controls.Add(_lineSizesBox);
+
+            GenerateCustomeLineWidthBox();
+        }
+
+        private void GenerateCustomeLineWidthBox()
+        {
+            TextBox box = new TextBox();
+            box.Text = Canvas.LineWidth.ToString();
+            box.Width = 50;
+            box.Location = new Point(_lineSizesBox.Location.X + _lineSizesBox.Width, _lineSizesBox.Height / 2 - box.Height / 2 - 3);
+            box.TextChanged += (sender, evt) => {
+                float output;
+                if (float.TryParse(box.Text, out output))
+                {
+                    Canvas?.SetCustomLineSize(output);
+                }
+            };
+            box.Enabled = false;
+            LineThicknessBox = box;
+            Controls.Add(box);
+        }
+
+        private void OnLineSizeButtonClicked(object sender, EventArgs e)
+        {
+            Button btn = sender as Button;
+            if (btn == null) return;
+            LineThickness thickness = (LineThickness)btn.Tag;
+            LineThicknessBox.Enabled = false;
+            if(thickness == LineThickness.Custom)
+            {
+                float newSize;
+                if(float.TryParse(LineThicknessBox.Text, out newSize))
+                {
+                    Canvas.SetCustomLineSize(newSize);
+                }
+                LineThicknessBox.Enabled = true;
+            }
+            Canvas.SetLineSize(thickness);
+        }
 
 
     }

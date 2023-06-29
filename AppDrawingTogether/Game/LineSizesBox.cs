@@ -65,7 +65,7 @@ namespace AppDrawingTogether.Game
                 button.Tag = value;
 
                 button.Size = new Size(_buttonWidth, _buttonHeight);
-                button.Location = new Point((_gap + _buttonWidth) * i, _gap);
+                button.Location = new Point((_gap + _buttonWidth) * i, 0);
 
                 Controls.Add(button);
                 Buttons.Add(button);
