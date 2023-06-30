@@ -17,6 +17,15 @@ namespace AppDrawingTogether.Game
             Location = new Point(0, 0);
         }
 
+        public delegate void ShownEvent(object sender, EventArgs e);
+
+        public ShownEvent Shown = (sender, evt) => { };
+        public new void Show()
+        {
+            Shown.Invoke(this, EventArgs.Empty);
+            base.Show();
+        }
+
         /// <summary>
         /// Adds a control to the controller and controller dictionary
         /// </summary>
