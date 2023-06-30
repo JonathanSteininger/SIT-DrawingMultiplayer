@@ -8,12 +8,26 @@ using Newtonsoft.Json;
 using System.Drawing;
 using System.Windows.Forms;
 using System.Drawing.Imaging;
+using DrawingTogether;
 
-namespace AppDrawingTogether
+namespace AppDrawingTogether.IO
 {
     internal static class FileHelper
     {
 
+        public static void SaveImageAndData(string directoryPath, string ImageName, PictureBox canvas, List<LinePortion> LineData)
+        {
+            SaveImage(directoryPath + $"/{ImageName}.png", canvas);
+            SaveObjectJson(directoryPath + $"/{ImageName}.data", LineData);
+        }
+        public static string[] GetFilePaths(string directoryPath)
+        {
+            if(!Directory.Exists(directoryPath)) Directory.CreateDirectory(directoryPath);
+            string[] temp = Directory.GetFiles(directoryPath);
+            string[] names = new string[temp.Length];
+            for(int i = 0; i< temp.Length; i++) names[i] = Path.GetFileName(temp[i]);
+            return names;
+        }
         static public void SaveObjectJson(string filePath, object obj)
         {
             VerifyPath(filePath);
