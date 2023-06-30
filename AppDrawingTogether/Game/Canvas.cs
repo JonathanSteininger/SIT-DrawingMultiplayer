@@ -1,4 +1,5 @@
-﻿using DrawingTogether;
+﻿using AppDrawingTogether.Network;
+using DrawingTogether;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -68,9 +69,10 @@ namespace AppDrawingTogether.Game
                 else _MsTick = 0;
             }
         }
-
-        public MyCanvas(float frameRate)
+        private LineManager _lineManager;
+        public MyCanvas(float frameRate, LineManager LineManager)
         {
+            _lineManager = LineManager;
             _lines = new List<LinePortion>();
             _pastLines = new HashSet<LinePortion>();
             AddedLines = new List<LinePortion>();
@@ -117,11 +119,12 @@ namespace AppDrawingTogether.Game
         private void Canvas_Paint(object sender, PaintEventArgs e)
         {
             Graphics g = e.Graphics;
+            AddedLines = _lineManager.ReadLinesFromClient();
             if (_redrawEverything) PaintFresh(g);
             else if (AddedLines.Count <= 0) PaintAdditive(g);
             else PaintMixed(g);
 
-            
+            _lineManager.AddAllLinesFromGame(_pastLines.ToList());
         }
 
         private void PaintMixed(Graphics g)

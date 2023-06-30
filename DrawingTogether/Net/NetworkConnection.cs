@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.IO;
 using System.Net.Sockets;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace DrawingTogether.Net
 {
@@ -76,6 +77,25 @@ namespace DrawingTogether.Net
             return Deserialize<T>(_reader.ReadString());
         }
         /// <summary>
+        /// Reads json from the network stream and deserializes automatically depending on data that was sent
+        /// </summary>
+        /// <returns>object from stream</returns>
+        public object ReadAuto()
+        {
+            CheckConnected();
+            return DeserializeAuto(_reader.ReadString());
+        }
+        /// <summary>
+        /// Writes object to network stream, and then reads stream for response.
+        /// </summary>
+        /// <param name="ObjectSent">object being sent</param>
+        /// <returns>response object</returns>
+        public object RequestAuto(object sentObject)
+        {
+            Write(sentObject);
+            return ReadAuto();
+        }
+        /// <summary>
         /// Converts object to json and sendts it to network stream.
         /// </summary>
         /// <param name="ObjectSent">object being sent to the stream</param>
@@ -102,7 +122,27 @@ namespace DrawingTogether.Net
 
         }
 
-        private T Deserialize<T>(string json) => JsonConvert.DeserializeObject<T>(json);
+        private object DeserializeAuto(string json)
+        {
+            JObject obj = JObject.Parse(json);
+            string Type = (string)obj["Type"];
+            switch(Type)
+            {
+                case nameof(LineDataTransfer):
+                    return Deserialize<LineDataTransfer>(json);
+                case nameof(PlayerName):
+                    return Deserialize<PlayerName>(json);
+                case nameof(Command):
+                    return Deserialize<Command>(json);
+
+            }
+            return null;
+
+        }
+        private T Deserialize<T>(string json)
+        {
+            return JsonConvert.DeserializeObject<T>(json);
+        }
         private string Serialize(object obj) => JsonConvert.SerializeObject(obj);
 
         public void Dispose()

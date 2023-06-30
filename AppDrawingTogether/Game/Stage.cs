@@ -40,8 +40,14 @@ namespace AppDrawingTogether.Game
         /// removes control from the controls dictionary
         /// </summary>
         /// <param name="control">control being removed</param>
+        public void RemoveControl(string key)
+        {
+            if (!Contains(key)) return;
+            RemoveControl(this[key]);
+        }
         public void RemoveControl(Control control)
         {
+            if (!Contains(control)) return;
             Controls.Remove(control.Name);
             base.Controls.Remove(control);
         }

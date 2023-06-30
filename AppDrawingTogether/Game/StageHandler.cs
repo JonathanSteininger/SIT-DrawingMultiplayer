@@ -6,13 +6,15 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Drawing;
 
 namespace AppDrawingTogether.Game
 {
     public enum Stages
     {
         MainMenu,
-        GameSelect,
+        GameSelectSinglePlayer,
+        GameSelectMultiPlayer,
         Game,
         Blank
     }
@@ -21,7 +23,7 @@ namespace AppDrawingTogether.Game
         private Stages _currentStage;
         public GroupBox ActiveStage => this[_currentStage];
         public StageHandler() {
-            Add(Stages.Blank, new Stage());
+            Add(Stages.Blank, new Stage(new Size(100,100)));
             _currentStage = Stages.Blank;
             EnableStage();
         }
@@ -48,6 +50,7 @@ namespace AppDrawingTogether.Game
         /// <param name="stage">stage to set to</param>
         public void SetStage(Stages stage)
         {
+            if (!ContainsKey(stage)) return;
             DisableAllStages();
             EnableStage(stage);
             _currentStage = stage;
@@ -67,6 +70,15 @@ namespace AppDrawingTogether.Game
             this[stage].Show();
             this[stage].Enabled = true;
             return true;
+        }
+
+        public delegate void StageAction(Stage stage);
+        public void ForEachStage(StageAction action)
+        {
+            foreach(KeyValuePair<Stages, Stage> kvp in this)
+            {
+                action.Invoke(kvp.Value);
+            }
         }
         /// <summary>
         /// Hides and disables all stages in current instance.

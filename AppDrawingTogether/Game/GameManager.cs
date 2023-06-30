@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using AppDrawingTogether.Network;
 using DrawingTogether;
 using DrawingTogether.Net;
 
@@ -12,6 +13,9 @@ namespace AppDrawingTogether.Game
 {
     internal class GameManager : GroupBox
     {
+
+        public LineManager LineManager;
+
 
         private PictureBox _currentColorBox;
         public MyCanvas Canvas { get; set; }
@@ -26,13 +30,19 @@ namespace AppDrawingTogether.Game
 
         private LineSizesBox<LineThickness> _lineSizesBox;
 
+        public void StopGame()
+        {
+            //save game.
+            //stop multiplayer connectionn.
+        }
 
         public GameManager(Size size, Point location, string playerName)
         {
+            LineManager = new LineManager(this);
             Size = size;
             Location = location;
 
-            Canvas = new MyCanvas(DEFAULT_FRAMERATE);
+            Canvas = new MyCanvas(DEFAULT_FRAMERATE, LineManager);
             PlayerName = playerName;
             Canvas.BorderStyle = BorderStyle.FixedSingle;
 
@@ -146,6 +156,9 @@ namespace AppDrawingTogether.Game
             Canvas.SetLineSize(thickness);
         }
 
-
+        internal void AddLineManager(LineManager lineManager)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

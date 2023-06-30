@@ -36,6 +36,9 @@
     <Reference Include="DrawingTogether">
       <HintPath>..\DrawingTogether\bin\Debug\DrawingTogether.dll</HintPath>
     </Reference>
+    <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.13.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -49,6 +52,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CanvasList.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="IO\FileHelper.cs" />
     <Compile Include="Game\Canvas.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -74,6 +81,11 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="HostGame.cs" />
+    <Compile Include="Network\Client\Connection.cs" />
+    <Compile Include="Network\LineManager.cs" />
+    <Compile Include="Network\Server\ClientWorker.cs" />
+    <Compile Include="Network\Server\ClientWorkerManager.cs" />
+    <Compile Include="Network\Server\ServerManager.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="Form1.resx">
@@ -88,6 +100,7 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -101,5 +114,6 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

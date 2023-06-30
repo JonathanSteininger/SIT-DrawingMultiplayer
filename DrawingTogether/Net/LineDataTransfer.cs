@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 
 namespace DrawingTogether.Net
 {
-    internal class LineDataTransfer : DTO
+    public class LineDataTransfer : DTO
     {
         public string Type => nameof(LineDataTransfer);
 
-        List<LinePortion> Portions { get; set; }
+        public List<LinePortion> Portions { get; set; }
         public LineDataTransfer(List<LinePortion> portions)
         {
             Portions = portions;
