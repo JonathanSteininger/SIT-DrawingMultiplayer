@@ -81,6 +81,7 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="HostGame.cs" />
+    <Compile Include="Network\Client\ClientLocalWorker.cs" />
     <Compile Include="Network\Client\Connection.cs" />
     <Compile Include="Network\LineManager.cs" />
     <Compile Include="Network\Server\ClientWorker.cs" />

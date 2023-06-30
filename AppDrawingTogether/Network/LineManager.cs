@@ -8,6 +8,7 @@ using DrawingTogether;
 using AppDrawingTogether.Game;
 using DrawingTogether.Net;
 using AppDrawingTogether.Network.Server;
+using AppDrawingTogether.Network.Client;
 
 namespace AppDrawingTogether.Network
 {
@@ -52,6 +53,24 @@ namespace AppDrawingTogether.Network
             lock (lockObject2)
             {
                 worker.SendLinesToClient(LinesToSend);
+            }
+        }
+
+        List<LinePortion> LinesToServer = new List<LinePortion>();
+        public object lockObject3 = new object();
+        public void AddLinesToSendToServer(List<LinePortion> lines)
+        {
+            lock (lockObject3)
+            {
+                LinesToServer.AddRange(lines);
+            }
+        }
+        public void SendLinesToServer(ClientLocalWorker worker)
+        {
+            lock (lockObject3)
+            {
+                worker.SendToServer(LinesToServer);
+                LinesToServer = new List<LinePortion>();
             }
         }
         

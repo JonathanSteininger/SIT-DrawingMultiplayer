@@ -1,0 +1,11 @@
+The project was made my Jonathan Steininger.
+
+this project is a windows forms application where you can draw on a canvas by yourself or with other people.
+
+The application allows you to start a server to allow other to join. all thats need is for the port numbers to match when trying to join the host.
+
+I have not encoutered any bugs while testing. everything should work as expected. the servers shut down without a problem. and the clients can leave the server without a problem.
+
+I unfortunetly didnt have time to add a display to see which users are currently connected to the server. );
+
+Have Fun!

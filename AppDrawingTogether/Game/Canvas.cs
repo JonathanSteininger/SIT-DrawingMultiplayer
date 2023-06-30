@@ -119,14 +119,15 @@ namespace AppDrawingTogether.Game
         private void Canvas_Paint(object sender, PaintEventArgs e)
         {
             Graphics g = e.Graphics;
+            if(Server)_lineManager.AddAllLinesFromGame(_lines.ToList());
+            else _lineManager.AddLinesToSendToServer(_lines.ToList());
             AddedLines = _lineManager.ReadLinesFromClient();
             if (_redrawEverything) PaintFresh(g);
             else if (AddedLines.Count <= 0) PaintAdditive(g);
             else PaintMixed(g);
 
-            _lineManager.AddAllLinesFromGame(_pastLines.ToList());
         }
-
+        public bool Server = true;
         private void PaintMixed(Graphics g)
         {
             List<LinePortion> linesToDraw = GetLinesToDraw();
@@ -152,13 +153,19 @@ namespace AppDrawingTogether.Game
             List<LinePortion> lines = new List<LinePortion>();
 
             lines.AddRange(_lines);
+            _lines.Clear();
             lines.AddRange(AddedLines);
+            AddedLines.Clear();
             lines.Sort();
             long tick = lines[lines.Count - 1].Tick;
 
             List<LinePortion> tempPast = _pastLines.ToList();
             int StartIndex = GetStartIndexPastTick(tick, tempPast);
+            if(StartIndex != -1)
+            {
             lines.AddRange(tempPast.GetRange(StartIndex, _pastLines.Count - StartIndex - 1));
+
+            }
 
             return lines;
         }

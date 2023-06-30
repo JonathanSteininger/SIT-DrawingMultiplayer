@@ -1,4 +1,5 @@
 ﻿using AppDrawingTogether.Game;
+using AppDrawingTogether.Network.Client;
 using AppDrawingTogether.Network.Server;
 using System;
 using System.Collections.Generic;
@@ -30,6 +31,8 @@ namespace AppDrawingTogether
         private void Form1_FormClosed(object sender, FormClosedEventArgs e)
         {
             server?.Stop();
+
+            ConnectionToServer?.Stop();
         }
 
         private void Form1_Resize(object sender, EventArgs e)
@@ -61,10 +64,24 @@ namespace AppDrawingTogether
 
             Button ExitButton = new Button();
             ExitButton.Click += ExitButtonGameClicked;
-            ExitButton.Click += (sender, e) => server?.Stop();
+            ExitButton.Click += (sender, e) =>
+            {
+                server?.Stop();
+
+                ConnectionToServer?.Stop();
+            };
             ExitButton.Name = "ExitButton";
             ExitButton.Text = "Exit";
             stage.AddControl(ExitButton);
+
+
+            Label lable = new Label();
+            lable.Text = "port num";
+            lable.Name = "PortLabel";
+            lable.Location = new Point(200, 25);
+            stage.AddControl(lable);
+
+            stage.Shown += (s, e) => lable.Text = $"Port Num: {(_stageHandler[Stages.GameSelectMultiPlayer]["PortTextBox"] as TextBox).Text}";
 
             //GameManager manager = CreateGameManager();
             //stage.AddControl(manager);
@@ -252,12 +269,25 @@ namespace AppDrawingTogether
             }
         }
 
-        private void JoinServer(int output)
+        private void JoinServer(int port)
         {
             server?.Stop();
-
+            ConnectionToServer?.Stop();
+            try
+            {
+                    GameManager game = CreateGame();
+                    game.Canvas.Server = false;
+                    ConnectionToServer = new Connection(port, game.LineManager, "jono", 5);
+                    _stageHandler.SetStage(Stages.Game);
+                    
+            }
+            catch (Exception e)
+            {
+                _stageHandler.SetStage(Stages.GameSelectMultiPlayer);
+                ConnectionToServer?.Stop();
+            }
         }
-
+        private Connection ConnectionToServer;
 
         private void CreateMultiPlayerGameButtonClicked(object sender, EventArgs e)
         {
@@ -276,6 +306,8 @@ namespace AppDrawingTogether
         private void StartServer(int port)
         {
             server?.Stop();
+
+            ConnectionToServer?.Stop();
             GameManager game = CreateGame();
             server = new ServerManager(port,game.LineManager);
 
