@@ -59,6 +59,10 @@
     <Compile Include="Game\LineSizesBox.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="Game\Stage.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Game\StageHandler.cs" />
     <Compile Include="JoinedGame.cs" />
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
